@@ -5,6 +5,7 @@ from utils.supabase_client import get_db
 from utils.auth import AuthManager
 from utils.llm_generator import NewsletterGenerator
 from utils.content_aggregator import ContentAggregator
+from utils.trend_detector import TrendDetector
 
 # Initialize database and auth
 db = get_db()
@@ -523,6 +524,16 @@ elif page == "Generate Newsletter":
                     if style_data:
                         style_profile = {'training_text': style_data[0].get('training_text', '')}
 
+                # Detect trending topics if enabled
+                trending_data = None
+                if include_trends and aggregated_content:
+                    trend_detector = TrendDetector(db if db.is_configured() else None)
+                    trending_data = trend_detector.get_trending_topics(
+                        aggregated_content,
+                        include_spikes=True,
+                        top_n=5
+                    )
+
                 # Generate newsletter using AI
                 content = generator.generate_newsletter(
                     content_items=aggregated_content,
@@ -531,6 +542,11 @@ elif page == "Generate Newsletter":
                     num_articles=num_articles,
                     include_trends=include_trends
                 )
+
+                # Prepend trending topics section if available
+                if trending_data and trending_data.get('trending_keywords'):
+                    trends_section = trend_detector.format_trends_for_newsletter(trending_data, max_trends=5)
+                    content = trends_section + "\n\n" + content
 
                 generation_time_ms = int((time.time() - start_time) * 1000)
 
