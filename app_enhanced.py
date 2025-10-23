@@ -1,11 +1,13 @@
 import streamlit as st
 import time
 import uuid
+from datetime import time as datetime_time
 from utils.supabase_client import get_db
 from utils.auth import AuthManager
 from utils.llm_generator import NewsletterGenerator
 from utils.content_aggregator import ContentAggregator
 from utils.trend_detector import TrendDetector
+from utils.delivery_scheduler import DeliveryScheduler
 
 # Initialize database and auth
 db = get_db()
@@ -813,7 +815,136 @@ elif page == "Dashboard":
         st.info("Database not configured. Connect Supabase to track activity.")
 
     st.markdown("---")
-    
+
+    # Morning Delivery Settings
+    st.markdown("### ⏰ Morning Delivery Settings")
+    st.markdown("Schedule automatic newsletter delivery at your preferred time.")
+
+    if db.is_configured():
+        # Get current schedule
+        scheduler = DeliveryScheduler(db)
+        current_schedule = scheduler.get_schedule(st.session_state.user_id)
+
+        # Enable/Disable toggle
+        delivery_enabled = st.toggle(
+            "Enable automatic morning delivery",
+            value=current_schedule.get('enabled', False) if current_schedule else False,
+            help="Automatically generate and send newsletters at your scheduled time"
+        )
+
+        if delivery_enabled:
+            col1, col2 = st.columns(2)
+
+            with col1:
+                # Time picker
+                default_time = datetime_time(8, 0)  # 08:00 AM
+                if current_schedule and current_schedule.get('time'):
+                    try:
+                        time_str = current_schedule['time']
+                        hour, minute = map(int, time_str.split(':')[:2])
+                        default_time = datetime_time(hour, minute)
+                    except:
+                        pass
+
+                delivery_time = st.time_input(
+                    "Delivery time (your local time)",
+                    value=default_time,
+                    help="Newsletter will be generated and sent at this time"
+                )
+
+                # Timezone selector
+                timezones = DeliveryScheduler.get_available_timezones()
+                default_tz = current_schedule.get('timezone', 'UTC') if current_schedule else 'UTC'
+                try:
+                    tz_index = timezones.index(default_tz)
+                except:
+                    tz_index = 0
+
+                delivery_timezone = st.selectbox(
+                    "Your timezone",
+                    options=timezones,
+                    index=tz_index,
+                    help="Select your local timezone"
+                )
+
+            with col2:
+                # Frequency selector
+                frequency_options = ["daily", "weekdays", "weekly"]
+                frequency_labels = {
+                    "daily": "📅 Every Day",
+                    "weekdays": "💼 Weekdays Only (Mon-Fri)",
+                    "weekly": "📆 Once Per Week"
+                }
+
+                default_freq = current_schedule.get('frequency', 'daily') if current_schedule else 'daily'
+                try:
+                    freq_index = frequency_options.index(default_freq)
+                except:
+                    freq_index = 0
+
+                delivery_frequency = st.selectbox(
+                    "Delivery frequency",
+                    options=frequency_options,
+                    format_func=lambda x: frequency_labels[x],
+                    index=freq_index
+                )
+
+                # Recipient emails
+                default_recipients = st.session_state.user_email
+                if current_schedule and current_schedule.get('recipients'):
+                    default_recipients = "\n".join(current_schedule['recipients'])
+
+                recipient_emails = st.text_area(
+                    "Recipient emails (one per line)",
+                    value=default_recipients,
+                    height=100,
+                    help="Enter email addresses to send newsletters to"
+                )
+
+            # Save button
+            if st.button("💾 Save Delivery Schedule", type="primary", use_container_width=True):
+                # Parse emails
+                emails = [email.strip() for email in recipient_emails.split("\n") if email.strip()]
+
+                if not emails:
+                    st.error("❌ Please enter at least one recipient email")
+                else:
+                    # Create schedule
+                    result = scheduler.create_schedule(
+                        user_id=st.session_state.user_id,
+                        delivery_time=delivery_time,
+                        timezone=delivery_timezone,
+                        frequency=delivery_frequency,
+                        enabled=True,
+                        recipient_emails=emails
+                    )
+
+                    if result['success']:
+                        st.success(f"✅ Morning delivery scheduled for {delivery_time.strftime('%I:%M %p')} {delivery_timezone}")
+
+                        # Calculate next delivery
+                        next_delivery = scheduler.get_next_delivery_time(
+                            delivery_time, delivery_timezone, delivery_frequency
+                        )
+                        formatted_time = DeliveryScheduler.format_time_with_timezone(next_delivery, delivery_timezone)
+                        st.info(f"📬 Next delivery: {formatted_time}")
+                    else:
+                        st.error(f"❌ Failed to save schedule: {result.get('error')}")
+
+        else:
+            if current_schedule and current_schedule.get('enabled'):
+                if st.button("🛑 Disable Automatic Delivery", use_container_width=True):
+                    result = scheduler.disable_schedule(st.session_state.user_id)
+                    if result['success']:
+                        st.success("✅ Automatic delivery disabled")
+                        st.rerun()
+            else:
+                st.info("💡 Enable automatic delivery to schedule daily newsletters")
+    else:
+        st.warning("⚠️ Database not configured. Please connect Supabase to use scheduled delivery.")
+
+    st.markdown("---")
+
     # Footer with provider info
     st.markdown(f"""
     <div style="text-align: center; color: #64748b; padding: 2rem 0;">
