@@ -1,0 +1,81 @@
+# SIGNAL BOOST =á
+*The internet's best bits, curated for busy humans*
+
+---
+
+## =% MUST READ
+
+**Why your AI is dumber than you think**
+New research shows LLMs are great at sounding confident and terrible at admitting when they don't know something. Spoiler: this has big implications for anyone using ChatGPT at work.
+[Read the paper ’]
+
+**The $10B comma**
+One missing comma in a contract just cost a company ten billion dollars. Yes, really. Grammar nerds: this is your Super Bowl.
+[Full story ’]
+
+## =° MONEY MOVES
+
+- **Stripe launches AI payment fraud detector**  Claims 99.9% accuracy. Skeptical but intrigued.
+- **Figma acquires Diagram**  Adobe in shambles (again)
+- **New VC fund exclusively for solopreneurs**  Min investment: $0. Max: $250K. Interesting model.
+
+## >à BIG THINK
+
+**Thread of the week:**
+@naval's 40-tweet breakdown of how to build wealth without getting lucky. It's been out for years but still hits different every time I read it. [View thread ’]
+
+**Podcast worth your time:**
+Lex Fridman × Demis Hassabis (Google DeepMind CEO)  3 hours about AI, consciousness, and AlphaGo. Put it on 1.5x speed and thank me later. [Listen ’]
+
+## =à TOOLS I'M TESTING
+
+**Notion AI Templates**  Finally useful. Downloaded the "Weekly Review" template and it's actually saving me 30 mins every Friday.
+
+**Arc Browser**  Switched from Chrome last week. The vertical tabs changed my life. No hyperbole.
+
+**Descript**  Video editing for people who hate video editing. You edit the transcript, it edits the video. Witchcraft.
+
+## =Ê BY THE NUMBERS
+
+- **12,847**  New AI startups launched in Q3 2024
+- **$47**  Average monthly spend on productivity SaaS per knowledge worker
+- **68%**  Percentage of developers using AI code assistants daily
+- **3.2hrs**  Average time saved per week (according to the same developers)
+
+## =¬ TWEET THAT MADE ME THINK
+
+> "Everyone wants to be a founder until it's time to do founder shit."
+>  @ShaanVP
+
+Felt that one in my bones.
+
+## <¯ ONE ACTIONABLE TIP
+
+**The 2-Minute Rule (revised):**
+If something takes less than 2 minutes, do it now.
+If something takes more than 2 hours, break it into 2-minute tasks.
+Everything in between can be scheduled.
+
+Try it for one week. You'll be shocked how much you actually get done.
+
+## <¤ YOUR TURN
+
+Quick poll: What's your current newsletter overwhelm level?
+
+Reply with:
+- =î Inbox zero, baby
+- =ì Manageable (under 50 unread)
+- =ê Drowning (50-200 unread)
+-   Email bankruptcy imminent (200+)
+
+I'll share results next week along with my actual newsletter management system.
+
+---
+
+That's it for this week. Remember: consuming content ` productivity. Go build something.
+
+ Chris
+
+*Signal Boost is read by 32,000+ tech professionals every Tuesday. Forward to a friend who needs better links ’*
+
+**P.S.** I'm testing a new format where I deep-dive ONE topic per week instead of curating links. Would you read that? Hit reply and let me know.
