@@ -84,21 +84,375 @@ if 'style_trained' not in st.session_state:
             # If database has issues, just use default
             pass
 
-# Custom CSS
+# Modern Custom CSS
 st.markdown("""
     <style>
+    /* CSS Variables for Theming */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+        --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Modern Typography */
     .main-header {
-        font-size: 3rem;
-        font-weight: bold;
-        background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        background-size: 200% 200%;
+        animation: gradient 3s ease infinite;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 1rem;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
     }
+
+    @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
     .subtitle {
-        font-size: 1.2rem;
-        color: #94a3b8;
-        margin-bottom: 2rem;
+        font-size: 1.3rem;
+        color: var(--text-secondary);
+        margin-bottom: 2.5rem;
+        font-weight: 400;
+        line-height: 1.6;
+    }
+
+    /* Modern Card Component */
+    .modern-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+    }
+
+    .modern-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    /* Feature Card with Icon */
+    .feature-card {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .feature-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-description {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    /* Enhanced Metric Cards */
+    .metric-card {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+        border: 1px solid rgba(102, 126, 234, 0.25);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .metric-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .metric-card:hover::after {
+        opacity: 1;
+    }
+
+    .metric-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .status-badge-success {
+        background: var(--success-gradient);
+    }
+
+    .status-badge-warning {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    /* Modern Button Styles */
+    .stButton > button {
+        background: var(--primary-gradient) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 2rem !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+    }
+
+    .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+    }
+
+    .stButton > button:active {
+        transform: translateY(0) !important;
+    }
+
+    /* Enhanced Form Inputs */
+    .stTextInput > div > div > input,
+    .stTextArea > div > div > textarea,
+    .stSelectbox > div > div > select {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(102, 126, 234, 0.2) !important;
+        border-radius: 12px !important;
+        color: var(--text-primary) !important;
+        transition: all 0.3s ease !important;
+        padding: 0.75rem !important;
+    }
+
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus,
+    .stSelectbox > div > div > select:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+        background-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Modern Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        padding: 0.5rem;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        background-color: transparent;
+        transition: all 0.3s ease;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: var(--primary-gradient) !important;
+        color: white !important;
+    }
+
+    /* Enhanced Metrics */
+    [data-testid="stMetricValue"] {
+        font-size: 2rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Metric Container Hover Effects */
+    [data-testid="stMetric"] {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        border-radius: 12px;
+        padding: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    [data-testid="stMetric"]:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        border-color: rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%);
+    }
+
+    /* Info/Success/Warning Boxes Hover */
+    .stAlert {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+    }
+
+    .stAlert:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(79, 172, 254, 0.2);
+    }
+
+    /* Sidebar Enhancements */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+        backdrop-filter: blur(10px);
+    }
+
+    [data-testid="stSidebar"] .stButton > button {
+        width: 100%;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Expander Styling */
+    .streamlit-expanderHeader {
+        background: var(--card-bg) !important;
+        border-radius: 12px !important;
+        border: 1px solid var(--card-border) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .streamlit-expanderHeader:hover {
+        border-color: rgba(102, 126, 234, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
+    }
+
+    /* Loading Animation */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .loading {
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Success Toast */
+    .success-toast {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(79, 172, 254, 0.3);
+        color: white;
+        font-weight: 600;
+    }
+
+    /* Container Enhancements */
+    .stContainer {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--card-border);
+    }
+
+    /* Feature Cards - Style Streamlit Containers */
+    div[data-testid="column"] > div > div > div {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%) !important;
+        border: 1px solid rgba(102, 126, 234, 0.2) !important;
+        border-radius: 16px !important;
+        padding: 1.8rem !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        min-height: 180px !important;
+    }
+
+    div[data-testid="column"] > div > div > div:hover {
+        transform: translateY(-8px) !important;
+        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.25) !important;
+        border-color: rgba(102, 126, 234, 0.4) !important;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%) !important;
+    }
+
+    /* Alternative selector for containers */
+    [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"] {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%) !important;
+        border: 1px solid rgba(102, 126, 234, 0.2) !important;
+        border-radius: 16px !important;
+        padding: 1.8rem !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        min-height: 180px !important;
+    }
+
+    [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"]:hover {
+        transform: translateY(-8px) !important;
+        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.25) !important;
+        border-color: rgba(102, 126, 234, 0.4) !important;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%) !important;
+    }
+
+    /* Smooth Transitions */
+    * {
+        transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Hide Streamlit Branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .main-header {
+            font-size: 2rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
@@ -214,56 +568,74 @@ if page == "Home":
     st.markdown('<h1 class="main-header">CreatorPulse</h1>', unsafe_allow_html=True)
     st.markdown('<p class="subtitle">Your AI-powered newsletter curator and drafting assistant</p>', unsafe_allow_html=True)
 
-    # Hero section with shadcn cards
-    col1, col2 = st.columns([2, 1])
+    # Hero section with modern design
+    col1, col2 = st.columns([2, 1], gap="large")
 
     with col1:
+        st.markdown("### Welcome to CreatorPulse 👋")
         st.markdown("""
-        ### Welcome to CreatorPulse
+        CreatorPulse transforms newsletter creation from hours to minutes using AI-powered automation:
+        """)
 
-        CreatorPulse helps content creators and curators save time by:
-        - Aggregating insights from multiple sources (Twitter, YouTube, Newsletters)
-        - Detecting emerging trends automatically
-        - Generating voice-matched newsletter drafts
-        - Delivering curated content every morning
+        with st.container():
+            st.markdown("""
+            - ✨ **Aggregate** insights from multiple sources
+            - 🔥 **Detect** emerging trends automatically
+            - ✍️ **Generate** voice-matched newsletter drafts
+            - 📬 **Deliver** curated content every morning
+            """)
 
+        st.info("""
         **Get started in 3 simple steps:**
+
         1. Connect your content sources
         2. Train your writing style
         3. Generate your first newsletter draft
         """)
 
-        if st.button("🚀 Get Started", use_container_width=True, type="primary"):
-            st.info("Navigate to 'Source Connections' in the sidebar to begin!")
+        if st.button("🚀 Get Started", use_container_width=True, type="primary", key="home_get_started"):
+            st.success("✨ Navigate to 'Source Connections' in the sidebar to begin!")
 
     with col2:
-        # Stats cards
-        st.markdown("### 📊 Quick Stats")
-        st.metric(label="Time Saved", value="2-3 hours", delta="per newsletter")
-        st.metric(label="Target Draft Time", value="< 20 min", delta="review & send")
-        st.metric(label="Draft Acceptance", value="≥70%", delta="target rate")
+        # Modern stats cards with native Streamlit metrics
+        st.metric(label="⏱️ Time Saved", value="2-3 hours", delta="per newsletter")
+        st.metric(label="⚡ Draft Time", value="< 20 min", delta="review & send")
+        st.metric(label="✅ Acceptance", value="≥70%", delta="target rate")
 
     st.markdown("---")
 
-    # Features section with enhanced cards
-    st.markdown("### Core Features")
+    # Features section with modern cards
+    st.markdown("### ✨ Core Features")
+    st.markdown("")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns(3, gap="large")
 
     with col1:
-        with st.container():
-            st.markdown("#### 🔗 Multi-Source Aggregation")
-            st.write("Connect Twitter handles, YouTube channels, and newsletter RSS feeds to aggregate content from all your trusted sources.")
+        st.markdown("""
+        <div class="feature-card">
+            <span class="feature-icon">🔗</span>
+            <h4 class="feature-title">Multi-Source Aggregation</h4>
+            <p class="feature-description">Connect Twitter handles, YouTube channels, and newsletter RSS feeds to aggregate content from all your trusted sources in one place.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     with col2:
-        with st.container():
-            st.markdown("#### 🎯 Trend Detection")
-            st.write("AI-powered trend analysis surfaces emerging topics and insights automatically, so you never miss what matters.")
+        st.markdown("""
+        <div class="feature-card">
+            <span class="feature-icon">🎯</span>
+            <h4 class="feature-title">Trend Detection</h4>
+            <p class="feature-description">AI-powered trend analysis surfaces emerging topics and insights automatically, so you never miss what matters most to your audience.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     with col3:
-        with st.container():
-            st.markdown("#### ✍️ Voice-Matched Drafts")
-            st.write("Upload your past newsletters to train the AI on your unique writing style for 70%+ ready-to-send drafts.")
+        st.markdown("""
+        <div class="feature-card">
+            <span class="feature-icon">✍️</span>
+            <h4 class="feature-title">Voice-Matched Drafts</h4>
+            <p class="feature-description">Upload your past newsletters to train the AI on your unique writing style for 70%+ ready-to-send drafts that sound like you.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 elif page == "Source Connections":
     st.title("🔗 Source Connections")
