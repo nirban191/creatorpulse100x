@@ -127,7 +127,7 @@ class NewsletterGenerator:
         elif provider == "groq":
             self.client = Groq(api_key=os.getenv('GROQ_API_KEY'))
             if not model:
-                self.model = "llama-3.1-70b-versatile"  # Default Groq model
+                self.model = "llama-3.3-70b-versatile"  # Default to latest Llama 3.3
 
     def generate_draft(
         self,

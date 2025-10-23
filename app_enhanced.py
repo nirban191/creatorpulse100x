@@ -57,7 +57,7 @@ if 'llm_provider' not in st.session_state:
     st.session_state.llm_provider = 'groq'
 
 if 'groq_model' not in st.session_state:
-    st.session_state.groq_model = 'llama-3.1-70b-versatile'  # Default fast model
+    st.session_state.groq_model = 'llama-3.3-70b-versatile'  # Default to latest Llama 3.3
 
 # Try to load user profile from database
 if db.is_configured():
@@ -156,13 +156,18 @@ with st.sidebar:
     if st.session_state.llm_provider == 'groq':
         st.success("🚀 Using Groq (Fast & Free!)")
 
-        # Groq model selection
+        # Groq model selection - All models available via Groq's fast inference
         groq_models = {
-            'llama-3.1-70b-versatile': '🚀 Llama 3.1 70B (Fast, Best)',
+            'llama-3.3-70b-versatile': '🌟 Llama 3.3 70B (Latest, Best)',
+            'llama-3.1-70b-versatile': '🚀 Llama 3.1 70B (Fast, Reliable)',
             'llama-3.1-8b-instant': '⚡ Llama 3.1 8B (Instant)',
-            'llama3-70b-8192': '🔥 Llama 3 70B',
-            'mixtral-8x7b-32768': '🎯 Mixtral 8x7B',
-            'gemma2-9b-it': '💎 Gemma 2 9B'
+            'llama3-70b-8192': '🔥 Llama 3 70B (Long Context)',
+            'mixtral-8x7b-32768': '🎯 Mixtral 8x7B (32K Context)',
+            'gemma2-9b-it': '💎 Gemma 2 9B (Google)',
+            'llama-3.2-90b-vision-preview': '👁️ Llama 3.2 90B Vision',
+            'llama-3.2-11b-vision-preview': '📸 Llama 3.2 11B Vision',
+            'llama-3.2-3b-preview': '⚡ Llama 3.2 3B (Ultra Fast)',
+            'llama-3.2-1b-preview': '🏃 Llama 3.2 1B (Lightning)',
         }
 
         selected_model = st.selectbox(
