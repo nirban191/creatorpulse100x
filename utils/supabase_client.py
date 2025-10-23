@@ -22,7 +22,18 @@ class CreatorPulseDB:
         self.client: Optional[Client] = None
 
         if self.url and self.key:
-            self.client = create_client(self.url, self.key)
+            try:
+                # Try creating client without options (for newer supabase versions)
+                self.client = create_client(self.url, self.key)
+            except TypeError:
+                # Fallback for older versions or when options are needed
+                try:
+                    from supabase import ClientOptions
+                    options = ClientOptions()
+                    self.client = create_client(self.url, self.key, options=options)
+                except Exception:
+                    # If all else fails, try basic initialization
+                    self.client = create_client(self.url, self.key)
 
     def is_configured(self) -> bool:
         """Check if Supabase is configured"""
