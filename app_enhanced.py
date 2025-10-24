@@ -950,17 +950,23 @@ elif page == "Style Trainer":
 
                 # Save to database
                 if db.is_configured():
-                    success = db.save_style_training(
+                    result = db.save_style_training(
                         st.session_state.user_id,
                         training_text,
                         {'provider': st.session_state.llm_provider}
                     )
-                    if success:
+                    if result.get('success'):
                         st.session_state.style_trained = True
                         st.success("✅ Writing style trained and saved to database!")
                         st.balloons()
                     else:
-                        st.error("❌ Failed to save style training to database")
+                        st.error(f"❌ Failed to save style training: {result.get('error', 'Unknown error')}")
+                        st.warning("💡 This is likely a Supabase RLS policy issue. Please check your database permissions.")
+                        st.info("📝 Run the SQL script in: `database/fix_style_training_rls.sql` to fix RLS policies")
+                        with st.expander("🔍 Debug Information"):
+                            st.code(f"User ID: {st.session_state.user_id}")
+                            st.code(f"Training text length: {len(training_text)} characters")
+                            st.code(f"Error details: {result.get('error', 'No error details available')}")
                 else:
                     st.session_state.style_trained = True
                     st.warning("⚠️ Database not configured. Style training not persisted.")

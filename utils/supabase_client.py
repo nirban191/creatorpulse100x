@@ -183,10 +183,10 @@ class CreatorPulseDB:
 
     # ===== STYLE TRAINING OPERATIONS =====
 
-    def save_style_training(self, user_id: str, training_text: str, analysis_result: Optional[Dict] = None) -> bool:
+    def save_style_training(self, user_id: str, training_text: str, analysis_result: Optional[Dict] = None) -> Dict:
         """Save style training data"""
         if not self.client:
-            return False
+            return {'success': False, 'error': 'Database not configured'}
 
         try:
             self.client.table('style_training').insert({
@@ -195,10 +195,11 @@ class CreatorPulseDB:
                 'analysis_result': analysis_result,
                 'is_active': True
             }).execute()
-            return True
+            return {'success': True}
         except Exception as e:
-            print(f"Error saving style training: {e}")
-            return False
+            error_msg = str(e)
+            print(f"Error saving style training: {error_msg}")
+            return {'success': False, 'error': error_msg}
 
     def get_style_training(self, user_id: str) -> List[Dict]:
         """Get active style training data"""
