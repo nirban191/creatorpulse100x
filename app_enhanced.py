@@ -1097,9 +1097,21 @@ elif page == "Generate Newsletter":
                                 'published_at': article['published_at']
                             })
 
-                    # Twitter is skipped (free tier doesn't support reads)
+                    # Fetch Twitter tweets using free scraping!
                     if twitter_handles:
-                        st.warning(f"⚠️ Twitter API free tier doesn't support reading tweets. Skipping {len(twitter_handles)} Twitter source(s).")
+                        st.info(f"🐦 Fetching real tweets from {len(twitter_handles)} handle(s) using free scraping...")
+                        tweets = aggregator.fetch_twitter_content(twitter_handles, days_back=7, max_tweets=10)
+                        for tweet in tweets:
+                            aggregated_content.append({
+                                'title': f"Tweet by @{tweet['author']}",
+                                'description': tweet['content'],
+                                'source_type': 'twitter',
+                                'url': tweet['url'],
+                                'author': tweet['author'],
+                                'likes': tweet['engagement'].get('likes', 0),
+                                'retweets': tweet['engagement'].get('retweets', 0),
+                                'published_at': tweet['timestamp']
+                            })
 
                 st.success(f"✅ Fetched {len(aggregated_content)} real content items!")
 

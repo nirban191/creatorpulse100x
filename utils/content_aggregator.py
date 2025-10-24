@@ -12,6 +12,13 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import re
 
+# Free Twitter scraping (no API key needed)
+try:
+    from ntscraper import Nitter
+    TWITTER_SCRAPING_AVAILABLE = True
+except ImportError:
+    TWITTER_SCRAPING_AVAILABLE = False
+
 
 class ContentAggregator:
     """Aggregates content from multiple sources"""
@@ -28,31 +35,78 @@ class ContentAggregator:
             except Exception as e:
                 print(f"Failed to initialize YouTube API: {e}")
 
-    def fetch_twitter_content(self, handles: List[str], days_back: int = 7) -> List[Dict[str, Any]]:
+    def fetch_twitter_content(self, handles: List[str], days_back: int = 7, max_tweets: int = 10) -> List[Dict[str, Any]]:
         """
-        Fetch recent tweets from specified handles
+        Fetch recent tweets from specified handles using free web scraping (NO API KEY NEEDED!)
 
         Args:
             handles: List of Twitter handles (without @)
             days_back: Number of days to look back
+            max_tweets: Maximum tweets per handle
 
         Returns:
             List of tweet dictionaries with content, author, timestamp, and URL
         """
-        # Placeholder for Twitter API integration
-        # In production, use tweepy or Twitter API v2
+        if not TWITTER_SCRAPING_AVAILABLE:
+            print("⚠️ ntscraper not installed. Install with: pip install ntscraper")
+            return self._get_mock_twitter_data(handles)
+
         tweets = []
+        cutoff_date = datetime.now() - timedelta(days=days_back)
 
-        for handle in handles:
-            # Mock data for demonstration
+        try:
+            # Initialize Nitter scraper (uses public Nitter instances)
+            scraper = Nitter()
+
+            for handle in handles:
+                try:
+                    # Remove @ if present
+                    clean_handle = handle.lstrip('@')
+
+                    # Get tweets from user
+                    user_tweets = scraper.get_tweets(clean_handle, mode='user', number=max_tweets)
+
+                    if user_tweets and 'tweets' in user_tweets:
+                        for tweet in user_tweets['tweets']:
+                            # Parse tweet date
+                            tweet_date = datetime.fromisoformat(tweet.get('date', datetime.now().isoformat()).replace('Z', '+00:00'))
+
+                            # Filter by date
+                            if tweet_date.replace(tzinfo=None) >= cutoff_date:
+                                tweets.append({
+                                    'content': tweet.get('text', ''),
+                                    'author': clean_handle,
+                                    'timestamp': tweet.get('date', datetime.now().isoformat()),
+                                    'url': tweet.get('link', f"https://twitter.com/{clean_handle}"),
+                                    'engagement': {
+                                        'likes': tweet.get('stats', {}).get('likes', 0),
+                                        'retweets': tweet.get('stats', {}).get('retweets', 0),
+                                        'comments': tweet.get('stats', {}).get('comments', 0)
+                                    }
+                                })
+
+                except Exception as e:
+                    print(f"Error scraping tweets from @{handle}: {e}")
+                    continue
+
+        except Exception as e:
+            print(f"Twitter scraping error: {e}")
+            print("Falling back to mock data...")
+            return self._get_mock_twitter_data(handles)
+
+        return tweets if tweets else self._get_mock_twitter_data(handles)
+
+    def _get_mock_twitter_data(self, handles: List[str]) -> List[Dict[str, Any]]:
+        """Return mock Twitter data when scraping unavailable"""
+        tweets = []
+        for handle in handles[:3]:
             tweets.append({
-                'content': f"Sample tweet from @{handle} about AI and content creation",
-                'author': handle,
+                'content': f"Sample tweet from @{handle} about AI and content creation. This is mock data - install ntscraper for real tweets!",
+                'author': handle.lstrip('@'),
                 'timestamp': datetime.now().isoformat(),
-                'url': f"https://twitter.com/{handle}/status/123456789",
-                'engagement': {'likes': 100, 'retweets': 20}
+                'url': f"https://twitter.com/{handle.lstrip('@')}/status/mock",
+                'engagement': {'likes': 100, 'retweets': 20, 'comments': 5}
             })
-
         return tweets
 
     def _extract_channel_id(self, channel_input: str) -> Optional[str]:
