@@ -29,21 +29,24 @@ def daily_trend_discovery_job():
 
     db = CreatorPulseDB()
     if not db.is_configured():
-        print("❌ Database not configured. Skipping trend discovery.")
-        return
+        error_msg = "Database not configured. Check SUPABASE_URL and SUPABASE_KEY environment variables."
+        print(f"❌ {error_msg}")
+        raise Exception(error_msg)
 
     trends_engine = TrendsDiscovery()
     if not trends_engine.pytrends:
-        print("❌ Google Trends not initialized. Skipping trend discovery.")
-        return
+        error_msg = "Google Trends not initialized. pytrends library may not be installed. Run: pip install pytrends"
+        print(f"❌ {error_msg}")
+        raise Exception(error_msg)
 
     try:
         # Get all users with enabled trend discovery
         users = db.get_users_with_trend_discovery_enabled()
 
         if not users:
-            print("ℹ️ No users have trend discovery enabled. Skipping.")
-            return
+            error_msg = "No users have trend discovery enabled. Please save your settings first by clicking 'Save Settings' button."
+            print(f"ℹ️ {error_msg}")
+            raise Exception(error_msg)
 
         print(f"📊 Found {len(users)} user(s) with trend discovery enabled")
 
