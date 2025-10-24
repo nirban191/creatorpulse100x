@@ -1050,13 +1050,58 @@ elif page == "Generate Newsletter":
                 aggregated_content = []
                 if db.is_configured():
                     sources = db.get_sources(st.session_state.user_id)
-                    # Create mock content based on sources
+
+                    # Organize sources by type
+                    youtube_channels = []
+                    twitter_handles = []
+                    rss_feeds = []
+
                     for source in sources:
-                        aggregated_content.append({
-                            'title': f"Latest from {source['identifier']}",
-                            'source_type': source['source_type'],
-                            'identifier': source['identifier']
-                        })
+                        if source['source_type'] == 'youtube':
+                            youtube_channels.append(source['identifier'])
+                        elif source['source_type'] == 'twitter':
+                            twitter_handles.append(source['identifier'])
+                        elif source['source_type'] == 'newsletter':
+                            rss_feeds.append(source['identifier'])
+
+                    # Fetch real content using ContentAggregator
+                    aggregator = ContentAggregator()
+
+                    # Fetch YouTube videos (real API call!)
+                    if youtube_channels:
+                        st.info(f"📹 Fetching real YouTube videos from {len(youtube_channels)} channel(s)...")
+                        youtube_videos = aggregator.fetch_youtube_content(youtube_channels, days_back=7, max_results=5)
+                        for video in youtube_videos:
+                            aggregated_content.append({
+                                'title': video['title'],
+                                'description': video['description'],
+                                'source_type': 'youtube',
+                                'url': video['url'],
+                                'channel': video['channel'],
+                                'views': video['views'],
+                                'likes': video['likes'],
+                                'published_at': video['published_at']
+                            })
+
+                    # Fetch RSS feed articles (already working!)
+                    if rss_feeds:
+                        st.info(f"📰 Fetching articles from {len(rss_feeds)} RSS feed(s)...")
+                        articles = aggregator.fetch_newsletter_content(rss_feeds, days_back=7)
+                        for article in articles:
+                            aggregated_content.append({
+                                'title': article['title'],
+                                'description': article.get('content', ''),
+                                'source_type': 'newsletter',
+                                'url': article['url'],
+                                'author': article['author'],
+                                'published_at': article['published_at']
+                            })
+
+                    # Twitter is skipped (free tier doesn't support reads)
+                    if twitter_handles:
+                        st.warning(f"⚠️ Twitter API free tier doesn't support reading tweets. Skipping {len(twitter_handles)} Twitter source(s).")
+
+                st.success(f"✅ Fetched {len(aggregated_content)} real content items!")
 
                 # Initialize newsletter generator with selected model
                 generator = NewsletterGenerator(
