@@ -4,8 +4,8 @@ Configure automated daily trend discovery from Google Trends
 """
 
 import streamlit as st
-from utils.auth import SupabaseAuth
-from utils.supabase_client import CreatorPulseDB
+from utils.auth import AuthManager
+from utils.supabase_client import get_db
 from utils.scheduler import trigger_job_manually, get_scheduled_jobs, is_scheduler_running
 from datetime import datetime, timedelta
 import pandas as pd
@@ -18,8 +18,8 @@ st.set_page_config(
 )
 
 # Initialize auth and database
-auth = SupabaseAuth()
-db = CreatorPulseDB()
+auth = AuthManager()
+db = get_db()
 
 # Check authentication
 if not auth.is_authenticated():
