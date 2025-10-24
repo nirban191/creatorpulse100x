@@ -8,6 +8,7 @@ from utils.llm_generator import NewsletterGenerator
 from utils.content_aggregator import ContentAggregator
 from utils.trend_detector import TrendDetector
 from utils.delivery_scheduler import DeliveryScheduler
+from utils.scheduler import init_scheduler
 
 # Initialize database and auth
 db = get_db()
@@ -62,6 +63,16 @@ if db.is_configured() and auth.is_authenticated():
     except Exception as e:
         # If database has issues, keep current state
         print(f"Error checking style training: {e}")
+
+# Initialize trend discovery scheduler (runs once per app session)
+if 'scheduler_initialized' not in st.session_state:
+    try:
+        init_scheduler()
+        st.session_state.scheduler_initialized = True
+        print("✅ Trend discovery scheduler initialized")
+    except Exception as e:
+        print(f"⚠️ Failed to initialize scheduler: {e}")
+        st.session_state.scheduler_initialized = False
 
 # Initialize workflow state for guided onboarding
 if 'guided_mode' not in st.session_state:
@@ -1123,6 +1134,23 @@ elif page == "Generate Newsletter":
                                 'retweets': tweet['engagement'].get('retweets', 0),
                                 'published_at': tweet['timestamp']
                             })
+
+                    # Fetch discovered trending topics from Google Trends (stored in database)
+                    if include_trends and db.is_configured():
+                        st.info("📈 Fetching trending topics from database...")
+                        trending_content = db.get_trending_content(st.session_state.user_id, days_back=7)
+                        if trending_content:
+                            for trend in trending_content[:5]:  # Limit to top 5 trends
+                                aggregated_content.append({
+                                    'title': trend['title'],
+                                    'description': trend.get('description', ''),
+                                    'source_type': 'google_trends',
+                                    'url': trend.get('url', ''),
+                                    'keywords': trend.get('keywords', []),
+                                    'category': trend.get('category', 'all'),
+                                    'discovered_at': trend['discovered_at']
+                                })
+                            st.success(f"✅ Added {len(trending_content[:5])} trending topics")
 
                 st.success(f"✅ Fetched {len(aggregated_content)} real content items!")
 

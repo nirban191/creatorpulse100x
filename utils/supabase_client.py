@@ -316,6 +316,175 @@ class CreatorPulseDB:
             print(f"Error updating LLM preference: {e}")
             return False
 
+    # ===== TRENDING CONTENT OPERATIONS =====
+
+    def save_trending_content(
+        self,
+        user_id: str,
+        source_type: str,
+        title: str,
+        description: str = '',
+        keywords: List[str] = None,
+        url: str = '',
+        metadata: Dict = None,
+        search_volume: int = 0,
+        category: str = 'all'
+    ) -> Dict:
+        """Save discovered trending content"""
+        if not self.client:
+            return {'success': False, 'error': 'Database not configured'}
+
+        try:
+            self.client.table('trending_content').insert({
+                'user_id': user_id,
+                'source_type': source_type,
+                'title': title,
+                'description': description,
+                'keywords': keywords or [],
+                'url': url,
+                'metadata': metadata or {},
+                'search_volume': search_volume,
+                'category': category,
+                'is_active': True
+            }).execute()
+            return {'success': True}
+        except Exception as e:
+            error_msg = str(e)
+            print(f"Error saving trending content: {error_msg}")
+            return {'success': False, 'error': error_msg}
+
+    def get_trending_content(self, user_id: str, days_back: int = 7) -> List[Dict]:
+        """Get trending content for a user from the last N days"""
+        if not self.client:
+            return []
+
+        try:
+            from datetime import datetime, timedelta
+            cutoff_date = (datetime.now() - timedelta(days=days_back)).isoformat()
+
+            response = self.client.table('trending_content').select('*').eq(
+                'user_id', user_id
+            ).eq('is_active', True).gte('discovered_at', cutoff_date).order(
+                'discovered_at', desc=True
+            ).execute()
+
+            return response.data
+        except Exception as e:
+            print(f"Error fetching trending content: {e}")
+            return []
+
+    def get_trending_by_category(self, user_id: str, category: str, days_back: int = 7) -> List[Dict]:
+        """Get trending content filtered by category"""
+        if not self.client:
+            return []
+
+        try:
+            from datetime import datetime, timedelta
+            cutoff_date = (datetime.now() - timedelta(days=days_back)).isoformat()
+
+            response = self.client.table('trending_content').select('*').eq(
+                'user_id', user_id
+            ).eq('category', category).eq('is_active', True).gte(
+                'discovered_at', cutoff_date
+            ).order('discovered_at', desc=True).execute()
+
+            return response.data
+        except Exception as e:
+            print(f"Error fetching trending content by category: {e}")
+            return []
+
+    def delete_trending_content(self, user_id: str, content_id: str) -> bool:
+        """Delete trending content"""
+        if not self.client:
+            return False
+
+        try:
+            self.client.table('trending_content').delete().eq('id', content_id).eq('user_id', user_id).execute()
+            return True
+        except Exception as e:
+            print(f"Error deleting trending content: {e}")
+            return False
+
+    # ===== TREND SETTINGS OPERATIONS =====
+
+    def get_user_trend_settings(self, user_id: str) -> Optional[Dict]:
+        """Get user's trend discovery settings"""
+        if not self.client:
+            return None
+
+        try:
+            response = self.client.table('trend_settings').select('*').eq('user_id', user_id).execute()
+            if response.data and len(response.data) > 0:
+                return response.data[0]
+            return None
+        except Exception as e:
+            print(f"Error fetching trend settings: {e}")
+            return None
+
+    def save_user_trend_settings(
+        self,
+        user_id: str,
+        enabled: bool = True,
+        categories: List[str] = None,
+        custom_keywords: List[str] = None,
+        schedule_time: str = '09:00:00'
+    ) -> Dict:
+        """Save or update user's trend discovery settings"""
+        if not self.client:
+            return {'success': False, 'error': 'Database not configured'}
+
+        try:
+            # Check if settings already exist
+            existing = self.get_user_trend_settings(user_id)
+
+            data = {
+                'user_id': user_id,
+                'enabled': enabled,
+                'categories': categories or ['tech', 'ai', 'business'],
+                'custom_keywords': custom_keywords or [],
+                'schedule_time': schedule_time
+            }
+
+            if existing:
+                # Update existing settings
+                self.client.table('trend_settings').update(data).eq('user_id', user_id).execute()
+            else:
+                # Insert new settings
+                self.client.table('trend_settings').insert(data).execute()
+
+            return {'success': True}
+        except Exception as e:
+            error_msg = str(e)
+            print(f"Error saving trend settings: {error_msg}")
+            return {'success': False, 'error': error_msg}
+
+    def get_users_with_trend_discovery_enabled(self) -> List[Dict]:
+        """Get all users who have trend discovery enabled"""
+        if not self.client:
+            return []
+
+        try:
+            response = self.client.table('trend_settings').select('*').eq('enabled', True).execute()
+            return response.data
+        except Exception as e:
+            print(f"Error fetching users with trend discovery enabled: {e}")
+            return []
+
+    def update_trend_settings_last_run(self, user_id: str) -> bool:
+        """Update the last_run_at timestamp for trend settings"""
+        if not self.client:
+            return False
+
+        try:
+            from datetime import datetime
+            self.client.table('trend_settings').update({
+                'last_run_at': datetime.now().isoformat()
+            }).eq('user_id', user_id).execute()
+            return True
+        except Exception as e:
+            print(f"Error updating last run timestamp: {e}")
+            return False
+
 
 # Singleton instance
 _db_instance = None
