@@ -496,7 +496,7 @@ with st.sidebar:
             auth.logout()
             st.rerun()
     else:
-        st.info("🎮 Demo Mode")
+        st.info("👋 Not logged in")
         col1, col2 = st.columns(2)
         with col1:
             if st.button("🔐 Login", use_container_width=True, key="sidebar_login"):
@@ -566,24 +566,26 @@ with st.sidebar:
         st.session_state.groq_model = selected_model
         st.success(f"✅ Switched to {available_models[selected_model]}")
 
-    st.markdown("---")
-    st.markdown("### Quick Stats")
+    # Quick Stats (only for authenticated users)
+    if auth.is_authenticated():
+        st.markdown("---")
+        st.markdown("### Quick Stats")
 
-    # Get stats from database or fallback
-    if db.is_configured():
-        user_stats = db.get_user_stats(st.session_state.user_id)
-        total_sources = user_stats.get('total_sources', 0)
-        total_drafts = user_stats.get('total_drafts', 0)
-    else:
-        # Fallback to session state
-        total_sources = (len(st.session_state.get('sources', {}).get('twitter', [])) +
-                        len(st.session_state.get('sources', {}).get('youtube', [])) +
-                        len(st.session_state.get('sources', {}).get('newsletters', [])))
-        total_drafts = len(st.session_state.get('generated_drafts', []))
+        # Get stats from database or fallback
+        if db.is_configured():
+            user_stats = db.get_user_stats(st.session_state.user_id)
+            total_sources = user_stats.get('total_sources', 0)
+            total_drafts = user_stats.get('total_drafts', 0)
+        else:
+            # Fallback to session state
+            total_sources = (len(st.session_state.get('sources', {}).get('twitter', [])) +
+                            len(st.session_state.get('sources', {}).get('youtube', [])) +
+                            len(st.session_state.get('sources', {}).get('newsletters', [])))
+            total_drafts = len(st.session_state.get('generated_drafts', []))
 
-    st.metric("Connected Sources", total_sources)
-    st.metric("Drafts Generated", total_drafts)
-    st.metric("Style Trained", "Yes ✓" if st.session_state.style_trained else "No ✗")
+        st.metric("Connected Sources", total_sources)
+        st.metric("Drafts Generated", total_drafts)
+        st.metric("Style Trained", "Yes ✓" if st.session_state.style_trained else "No ✗")
 
 # Main content
 if page == "Home":
