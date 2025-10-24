@@ -140,6 +140,21 @@ st.markdown("""
         max-width: 500px;
         padding-top: 3rem;
     }
+
+    /* Bottom Section Headings */
+    .section-heading {
+        text-align: center;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        letter-spacing: -0.01em;
+    }
+
+    /* Bottom Section Spacing */
+    .bottom-section {
+        margin-top: 0.5rem;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -212,15 +227,19 @@ st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("#### Don't have an account?")
+    st.markdown('<p class="section-heading">Don\'t have an<br/>account?</p>', unsafe_allow_html=True)
+    st.markdown('<div class="bottom-section">', unsafe_allow_html=True)
     if st.button("📝 Create Account", use_container_width=True):
         st.switch_page("pages/2_📝_Signup.py")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown("#### Forgot password?")
+    st.markdown('<p class="section-heading">Forgot password?</p>', unsafe_allow_html=True)
+    st.markdown('<div class="bottom-section">', unsafe_allow_html=True)
     if st.button("🔑 Reset Password", use_container_width=True):
         st.session_state.show_reset = True
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Password reset modal
 if st.session_state.get('show_reset', False):
