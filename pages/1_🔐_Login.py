@@ -149,6 +149,10 @@ st.markdown("""
         font-weight: 600;
         margin-bottom: 1rem;
         letter-spacing: -0.01em;
+        min-height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Bottom Section Spacing */
