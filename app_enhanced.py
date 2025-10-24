@@ -48,15 +48,20 @@ if db.is_configured() and auth.is_authenticated():
 # Initialize style_trained state
 if 'style_trained' not in st.session_state:
     st.session_state.style_trained = False
-    # Try to check if user has style training in database (only for authenticated users)
-    if db.is_configured() and auth.is_authenticated():
-        try:
-            style_data = db.get_style_training(st.session_state.user_id)
-            if style_data:
-                st.session_state.style_trained = len(style_data) > 0
-        except Exception as e:
-            # If database has issues, just use default
-            pass
+
+# ALWAYS check database for style training on page load (for authenticated users)
+if db.is_configured() and auth.is_authenticated():
+    try:
+        style_data = db.get_style_training(st.session_state.user_id)
+        if style_data and len(style_data) > 0:
+            # User has trained style in database - update session state
+            st.session_state.style_trained = True
+        elif not style_data or len(style_data) == 0:
+            # No style training found - ensure it's False
+            st.session_state.style_trained = False
+    except Exception as e:
+        # If database has issues, keep current state
+        print(f"Error checking style training: {e}")
 
 # Initialize workflow state for guided onboarding
 if 'guided_mode' not in st.session_state:
