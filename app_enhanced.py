@@ -84,6 +84,13 @@ if 'style_trained' not in st.session_state:
             # If database has issues, just use default
             pass
 
+# Initialize workflow state for guided onboarding
+if 'guided_mode' not in st.session_state:
+    st.session_state.guided_mode = False
+
+if 'current_step' not in st.session_state:
+    st.session_state.current_step = "Home"
+
 # Modern Custom CSS
 st.markdown("""
     <style>
@@ -259,6 +266,16 @@ st.markdown("""
         font-weight: 600 !important;
         transition: all 0.3s ease !important;
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        min-width: fit-content !important;
+    }
+
+    .stButton > button p {
+        white-space: nowrap !important;
+        overflow: visible !important;
+        margin: 0 !important;
     }
 
     .stButton > button:hover {
@@ -345,6 +362,42 @@ st.markdown("""
     .stAlert:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 16px rgba(79, 172, 254, 0.2);
+    }
+
+    /* Enhanced Selectbox Styling */
+    [data-baseweb="select"] {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%) !important;
+        border: 1px solid rgba(102, 126, 234, 0.3) !important;
+        border-radius: 12px !important;
+        transition: all 0.3s ease !important;
+    }
+
+    [data-baseweb="select"]:hover {
+        border-color: rgba(102, 126, 234, 0.5) !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    [data-baseweb="select"] > div {
+        background: transparent !important;
+        border: none !important;
+    }
+
+    /* Selectbox dropdown */
+    [data-baseweb="popover"] {
+        background: rgba(30, 41, 59, 0.98) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(102, 126, 234, 0.3) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    [data-baseweb="menu"] li {
+        transition: all 0.2s ease !important;
+    }
+
+    [data-baseweb="menu"] li:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%) !important;
     }
 
     /* Sidebar Enhancements */
@@ -482,67 +535,63 @@ with st.sidebar:
     st.markdown("---")
 
     st.markdown("### Navigation")
-    page = st.radio(
-        "Go to",
-        ["Home", "Source Connections", "Style Trainer", "Generate Newsletter", "Dashboard"],
-        label_visibility="collapsed"
-    )
+
+    # Use guided mode or allow manual override
+    if st.session_state.guided_mode:
+        # Get the index of current step for the radio
+        pages_list = ["Home", "Source Connections", "Style Trainer", "Generate Newsletter", "Dashboard"]
+        current_index = pages_list.index(st.session_state.current_step) if st.session_state.current_step in pages_list else 0
+
+        page = st.radio(
+            "Go to",
+            pages_list,
+            index=current_index,
+            label_visibility="collapsed",
+            key="guided_nav"
+        )
+
+        # Allow manual navigation to override guided mode
+        if page != st.session_state.current_step:
+            st.session_state.current_step = page
+            st.session_state.guided_mode = False  # Exit guided mode if user manually navigates
+    else:
+        # Normal navigation mode
+        page = st.radio(
+            "Go to",
+            ["Home", "Source Connections", "Style Trainer", "Generate Newsletter", "Dashboard"],
+            label_visibility="collapsed"
+        )
 
     st.markdown("---")
     
-    # LLM Provider Selection with shadcn badge
-    st.markdown("### ⚡ LLM Provider")
-    provider_col1, provider_col2, provider_col3 = st.columns(3)
-    
-    with provider_col1:
-        if st.button("Groq", use_container_width=True, type="primary" if st.session_state.llm_provider == 'groq' else "secondary"):
-            st.session_state.llm_provider = 'groq'
-            st.rerun()
-    
-    with provider_col2:
-        if st.button("OpenAI", use_container_width=True, type="primary" if st.session_state.llm_provider == 'openai' else "secondary"):
-            st.session_state.llm_provider = 'openai'
-            st.rerun()
-    
-    with provider_col3:
-        if st.button("Claude", use_container_width=True, type="primary" if st.session_state.llm_provider == 'anthropic' else "secondary"):
-            st.session_state.llm_provider = 'anthropic'
-            st.rerun()
-    
-    # Show current provider badge and model selection
-    if st.session_state.llm_provider == 'groq':
-        st.success("🚀 Using Groq (Fast & Free!)")
+    # Model Selection
+    st.markdown('<h3 style="margin-bottom: 1rem;"><span style="font-size: 1.5rem;">🤖</span> AI Model</h3>', unsafe_allow_html=True)
 
-        # Groq model selection - All models available via Groq's fast inference
-        groq_models = {
-            'llama-3.3-70b-versatile': '🌟 Llama 3.3 70B (Latest, Best)',
-            'llama-3.1-70b-versatile': '🚀 Llama 3.1 70B (Fast, Reliable)',
-            'llama-3.1-8b-instant': '⚡ Llama 3.1 8B (Instant)',
-            'llama3-70b-8192': '🔥 Llama 3 70B (Long Context)',
-            'mixtral-8x7b-32768': '🎯 Mixtral 8x7B (32K Context)',
-            'gemma2-9b-it': '💎 Gemma 2 9B (Google)',
-            'llama-3.2-90b-vision-preview': '👁️ Llama 3.2 90B Vision',
-            'llama-3.2-11b-vision-preview': '📸 Llama 3.2 11B Vision',
-            'llama-3.2-3b-preview': '⚡ Llama 3.2 3B (Ultra Fast)',
-            'llama-3.2-1b-preview': '🏃 Llama 3.2 1B (Lightning)',
-        }
+    # Available models
+    available_models = {
+        'llama-3.3-70b-versatile': '🌟 Llama 3.3 70B (Latest, Best)',
+        'llama-3.1-70b-versatile': '🚀 Llama 3.1 70B (Fast, Reliable)',
+        'llama-3.1-8b-instant': '⚡ Llama 3.1 8B (Instant)',
+        'llama3-70b-8192': '🔥 Llama 3 70B (Long Context)',
+        'mixtral-8x7b-32768': '🎯 Mixtral 8x7B (32K Context)',
+        'gemma2-9b-it': '💎 Gemma 2 9B (Google)',
+        'llama-3.2-90b-vision-preview': '👁️ Llama 3.2 90B Vision',
+        'llama-3.2-11b-vision-preview': '📸 Llama 3.2 11B Vision',
+        'llama-3.2-3b-preview': '⚡ Llama 3.2 3B (Ultra Fast)',
+        'llama-3.2-1b-preview': '🏃 Llama 3.2 1B (Lightning)',
+    }
 
-        selected_model = st.selectbox(
-            "Model",
-            options=list(groq_models.keys()),
-            format_func=lambda x: groq_models[x],
-            index=list(groq_models.keys()).index(st.session_state.groq_model),
-            key="groq_model_selector"
-        )
+    selected_model = st.selectbox(
+        "Select Model",
+        options=list(available_models.keys()),
+        format_func=lambda x: available_models[x],
+        index=list(available_models.keys()).index(st.session_state.groq_model) if st.session_state.groq_model in available_models else 0,
+        key="model_selector"
+    )
 
-        if selected_model != st.session_state.groq_model:
-            st.session_state.groq_model = selected_model
-            st.success(f"✅ Switched to {groq_models[selected_model]}")
-
-    elif st.session_state.llm_provider == 'openai':
-        st.info("🤖 Using OpenAI GPT-4")
-    else:
-        st.info("🎭 Using Anthropic Claude")
+    if selected_model != st.session_state.groq_model:
+        st.session_state.groq_model = selected_model
+        st.success(f"✅ Switched to {available_models[selected_model]}")
 
     st.markdown("---")
     st.markdown("### Quick Stats")
@@ -594,7 +643,9 @@ if page == "Home":
         """)
 
         if st.button("🚀 Get Started", use_container_width=True, type="primary", key="home_get_started"):
-            st.success("✨ Navigate to 'Source Connections' in the sidebar to begin!")
+            st.session_state.guided_mode = True
+            st.session_state.current_step = "Source Connections"
+            st.rerun()
 
     with col2:
         # Modern stats cards with native Streamlit metrics
@@ -762,6 +813,25 @@ elif page == "Source Connections":
                             time.sleep(0.3)
                             st.rerun()
 
+    # Guided workflow - Continue button
+    if st.session_state.guided_mode:
+        st.markdown("---")
+        st.markdown("")
+
+        # Check if at least one source is connected
+        total_sources = 0
+        if db.is_configured():
+            total_sources = len(twitter_sources) + len(youtube_sources) + len(newsletter_sources)
+
+        if total_sources > 0:
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col2:
+                if st.button("Continue to Style Training →", use_container_width=True, type="primary", key="continue_to_style"):
+                    st.session_state.current_step = "Style Trainer"
+                    st.rerun()
+        else:
+            st.info("💡 Add at least one source to continue to the next step")
+
 elif page == "Style Trainer":
     st.title("✍️ Writing Style Trainer")
     st.markdown("Upload your past newsletters to train the AI on your unique writing style.")
@@ -831,9 +901,23 @@ elif page == "Style Trainer":
             with col2:
                 st.markdown("""
                 **Structure:** Clear sections with engaging introductions
-                
+
                 **Sentence Style:** Varied length with punchy key points
                 """)
+
+    # Guided workflow - Continue button
+    if st.session_state.guided_mode:
+        st.markdown("---")
+        st.markdown("")
+
+        if st.session_state.style_trained:
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col2:
+                if st.button("Continue to Generate Newsletter →", use_container_width=True, type="primary", key="continue_to_generate"):
+                    st.session_state.current_step = "Generate Newsletter"
+                    st.rerun()
+        else:
+            st.info("💡 Train your writing style to continue to the next step")
 
 elif page == "Generate Newsletter":
     st.title("📝 Generate Newsletter")
