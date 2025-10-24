@@ -21,17 +21,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Get authenticated user or set up demo mode
+# Get authenticated user
 # Note: We no longer block users from seeing the home page
 if auth.is_authenticated():
     user = auth.get_current_user()
     st.session_state.user_id = user['id']
     st.session_state.user_email = user['email']
-else:
-    # Demo mode - user chose to continue without auth
-    if 'user_id' not in st.session_state:
-        st.session_state.user_id = str(uuid.uuid4())
-        st.session_state.user_email = 'demo@creatorpulse.com'
 
 # Always initialize llm_provider and model first (default)
 if 'llm_provider' not in st.session_state:
@@ -622,7 +617,7 @@ if page == "Home":
 
         # Get Started button with smart routing
         if st.button("🚀 Get Started", use_container_width=True, type="primary", key="home_get_started"):
-            if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
+            if not auth.is_authenticated():
                 # Show auth options
                 st.session_state.show_auth_modal = True
                 st.rerun()
@@ -634,22 +629,13 @@ if page == "Home":
 
         # Show auth modal if triggered
         if st.session_state.get('show_auth_modal', False):
-            st.info("💡 **Choose an option to continue:**")
+            st.info("💡 **Please login or sign up to continue:**")
 
-            modal_col1, modal_col2, modal_col3 = st.columns(3)
+            modal_col1, modal_col2 = st.columns(2)
             with modal_col1:
-                if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="modal_demo"):
-                    st.session_state.demo_mode = True
-                    st.session_state.user_id = str(uuid.uuid4())
-                    st.session_state.user_email = 'demo@creatorpulse.com'
-                    st.session_state.show_auth_modal = False
-                    st.session_state.guided_mode = True
-                    st.session_state.current_step = "Source Connections"
-                    st.rerun()
-            with modal_col2:
-                if st.button("🔐 Login", use_container_width=True, key="modal_login"):
+                if st.button("🔐 Login", use_container_width=True, type="primary", key="modal_login"):
                     st.switch_page("pages/1_🔐_Login.py")
-            with modal_col3:
+            with modal_col2:
                 if st.button("📝 Sign Up", use_container_width=True, key="modal_signup"):
                     st.switch_page("pages/2_📝_Signup.py")
 
@@ -695,7 +681,7 @@ if page == "Home":
         """, unsafe_allow_html=True)
 
     # Prominent CTA Section at bottom (for non-auth users)
-    if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
+    if not auth.is_authenticated():
         st.markdown("---")
         st.markdown("")
 
@@ -735,19 +721,11 @@ if page == "Home":
         st.markdown("")
 
         # Primary CTAs
-        cta_col1, cta_col2, cta_col3 = st.columns([1, 1, 1], gap="medium")
+        cta_col1, cta_col2 = st.columns([1, 1], gap="medium")
         with cta_col1:
-            if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="bottom_cta_demo"):
-                st.session_state.demo_mode = True
-                st.session_state.user_id = str(uuid.uuid4())
-                st.session_state.user_email = 'demo@creatorpulse.com'
-                st.session_state.guided_mode = True
-                st.session_state.current_step = "Source Connections"
-                st.rerun()
-        with cta_col2:
-            if st.button("🔐 Login", use_container_width=True, key="bottom_cta_login"):
+            if st.button("🔐 Login", use_container_width=True, type="primary", key="bottom_cta_login"):
                 st.switch_page("pages/1_🔐_Login.py")
-        with cta_col3:
+        with cta_col2:
             if st.button("📝 Sign Up", use_container_width=True, key="bottom_cta_signup"):
                 st.switch_page("pages/2_📝_Signup.py")
 
@@ -756,21 +734,15 @@ if page == "Home":
 
 elif page == "Source Connections":
     # Require authentication for functional pages
-    if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
-        st.warning("🔐 Please login or use demo mode to access this feature")
+    if not auth.is_authenticated():
+        st.warning("🔐 Please login to access this feature")
         st.info("Choose an option below to continue:")
 
-        auth_col1, auth_col2, auth_col3 = st.columns(3)
+        auth_col1, auth_col2 = st.columns(2)
         with auth_col1:
-            if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="source_demo"):
-                st.session_state.demo_mode = True
-                st.session_state.user_id = str(uuid.uuid4())
-                st.session_state.user_email = 'demo@creatorpulse.com'
-                st.rerun()
-        with auth_col2:
-            if st.button("🔐 Login", use_container_width=True, key="source_login"):
+            if st.button("🔐 Login", use_container_width=True, type="primary", key="source_login"):
                 st.switch_page("pages/1_🔐_Login.py")
-        with auth_col3:
+        with auth_col2:
             if st.button("📝 Sign Up", use_container_width=True, key="source_signup"):
                 st.switch_page("pages/2_📝_Signup.py")
         st.stop()
@@ -920,21 +892,15 @@ elif page == "Source Connections":
 
 elif page == "Style Trainer":
     # Require authentication for functional pages
-    if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
-        st.warning("🔐 Please login or use demo mode to access this feature")
+    if not auth.is_authenticated():
+        st.warning("🔐 Please login to access this feature")
         st.info("Choose an option below to continue:")
 
-        auth_col1, auth_col2, auth_col3 = st.columns(3)
+        auth_col1, auth_col2 = st.columns(2)
         with auth_col1:
-            if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="style_demo"):
-                st.session_state.demo_mode = True
-                st.session_state.user_id = str(uuid.uuid4())
-                st.session_state.user_email = 'demo@creatorpulse.com'
-                st.rerun()
-        with auth_col2:
-            if st.button("🔐 Login", use_container_width=True, key="style_login"):
+            if st.button("🔐 Login", use_container_width=True, type="primary", key="style_login"):
                 st.switch_page("pages/1_🔐_Login.py")
-        with auth_col3:
+        with auth_col2:
             if st.button("📝 Sign Up", use_container_width=True, key="style_signup"):
                 st.switch_page("pages/2_📝_Signup.py")
         st.stop()
@@ -1027,21 +993,15 @@ elif page == "Style Trainer":
 
 elif page == "Generate Newsletter":
     # Require authentication for functional pages
-    if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
-        st.warning("🔐 Please login or use demo mode to access this feature")
+    if not auth.is_authenticated():
+        st.warning("🔐 Please login to access this feature")
         st.info("Choose an option below to continue:")
 
-        auth_col1, auth_col2, auth_col3 = st.columns(3)
+        auth_col1, auth_col2 = st.columns(2)
         with auth_col1:
-            if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="generate_demo"):
-                st.session_state.demo_mode = True
-                st.session_state.user_id = str(uuid.uuid4())
-                st.session_state.user_email = 'demo@creatorpulse.com'
-                st.rerun()
-        with auth_col2:
-            if st.button("🔐 Login", use_container_width=True, key="generate_login"):
+            if st.button("🔐 Login", use_container_width=True, type="primary", key="generate_login"):
                 st.switch_page("pages/1_🔐_Login.py")
-        with auth_col3:
+        with auth_col2:
             if st.button("📝 Sign Up", use_container_width=True, key="generate_signup"):
                 st.switch_page("pages/2_📝_Signup.py")
         st.stop()
@@ -1300,21 +1260,15 @@ elif page == "Generate Newsletter":
 
 elif page == "Dashboard":
     # Require authentication for functional pages
-    if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
-        st.warning("🔐 Please login or use demo mode to access this feature")
+    if not auth.is_authenticated():
+        st.warning("🔐 Please login to access this feature")
         st.info("Choose an option below to continue:")
 
-        auth_col1, auth_col2, auth_col3 = st.columns(3)
+        auth_col1, auth_col2 = st.columns(2)
         with auth_col1:
-            if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="dashboard_demo"):
-                st.session_state.demo_mode = True
-                st.session_state.user_id = str(uuid.uuid4())
-                st.session_state.user_email = 'demo@creatorpulse.com'
-                st.rerun()
-        with auth_col2:
-            if st.button("🔐 Login", use_container_width=True, key="dashboard_login"):
+            if st.button("🔐 Login", use_container_width=True, type="primary", key="dashboard_login"):
                 st.switch_page("pages/1_🔐_Login.py")
-        with auth_col3:
+        with auth_col2:
             if st.button("📝 Sign Up", use_container_width=True, key="dashboard_signup"):
                 st.switch_page("pages/2_📝_Signup.py")
         st.stop()
