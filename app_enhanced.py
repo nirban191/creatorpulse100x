@@ -35,8 +35,8 @@ if 'llm_provider' not in st.session_state:
 if 'groq_model' not in st.session_state:
     st.session_state.groq_model = 'llama-3.3-70b-versatile'  # Default to latest Llama 3.3
 
-# Try to load user profile from database
-if db.is_configured():
+# Try to load user profile from database (only for authenticated users)
+if db.is_configured() and auth.is_authenticated():
     try:
         profile = db.get_or_create_profile(st.session_state.user_id, st.session_state.user_email)
         if profile and profile.get('preferred_llm_provider'):
@@ -48,11 +48,12 @@ if db.is_configured():
 # Initialize style_trained state
 if 'style_trained' not in st.session_state:
     st.session_state.style_trained = False
-    # Try to check if user has style training in database
-    if db.is_configured():
+    # Try to check if user has style training in database (only for authenticated users)
+    if db.is_configured() and auth.is_authenticated():
         try:
             style_data = db.get_style_training(st.session_state.user_id)
-            st.session_state.style_trained = len(style_data) > 0
+            if style_data:
+                st.session_state.style_trained = len(style_data) > 0
         except Exception as e:
             # If database has issues, just use default
             pass
