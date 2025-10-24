@@ -21,30 +21,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Check authentication
-if not auth.is_authenticated():
-    st.warning("⚠️ Please login to access CreatorPulse")
-    st.info("You will be redirected to the login page...")
-
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col1:
-        if st.button("🔐 Login", use_container_width=True, type="primary"):
-            st.switch_page("pages/1_🔐_Login.py")
-    with col2:
-        if st.button("📝 Sign Up", use_container_width=True):
-            st.switch_page("pages/2_📝_Signup.py")
-    with col3:
-        if st.button("🎮 Demo Mode", use_container_width=True):
-            # Enable demo mode without authentication
-            st.session_state.demo_mode = True
-            st.session_state.user_id = str(uuid.uuid4())
-            st.session_state.user_email = 'demo@creatorpulse.com'
-            st.rerun()
-
-    if not st.session_state.get('demo_mode', False):
-        st.stop()
-
-# Get authenticated user or use demo
+# Get authenticated user or set up demo mode
+# Note: We no longer block users from seeing the home page
 if auth.is_authenticated():
     user = auth.get_current_user()
     st.session_state.user_id = user['id']
@@ -642,10 +620,38 @@ if page == "Home":
         3. Generate your first newsletter draft
         """)
 
+        # Get Started button with smart routing
         if st.button("🚀 Get Started", use_container_width=True, type="primary", key="home_get_started"):
-            st.session_state.guided_mode = True
-            st.session_state.current_step = "Source Connections"
-            st.rerun()
+            if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
+                # Show auth options
+                st.session_state.show_auth_modal = True
+                st.rerun()
+            else:
+                # Start guided workflow
+                st.session_state.guided_mode = True
+                st.session_state.current_step = "Source Connections"
+                st.rerun()
+
+        # Show auth modal if triggered
+        if st.session_state.get('show_auth_modal', False):
+            st.info("💡 **Choose an option to continue:**")
+
+            modal_col1, modal_col2, modal_col3 = st.columns(3)
+            with modal_col1:
+                if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="modal_demo"):
+                    st.session_state.demo_mode = True
+                    st.session_state.user_id = str(uuid.uuid4())
+                    st.session_state.user_email = 'demo@creatorpulse.com'
+                    st.session_state.show_auth_modal = False
+                    st.session_state.guided_mode = True
+                    st.session_state.current_step = "Source Connections"
+                    st.rerun()
+            with modal_col2:
+                if st.button("🔐 Login", use_container_width=True, key="modal_login"):
+                    st.switch_page("pages/1_🔐_Login.py")
+            with modal_col3:
+                if st.button("📝 Sign Up", use_container_width=True, key="modal_signup"):
+                    st.switch_page("pages/2_📝_Signup.py")
 
     with col2:
         # Modern stats cards with native Streamlit metrics
@@ -688,7 +694,87 @@ if page == "Home":
         </div>
         """, unsafe_allow_html=True)
 
+    # Prominent CTA Section at bottom (for non-auth users)
+    if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
+        st.markdown("---")
+        st.markdown("")
+
+        # Social proof / benefits
+        st.markdown("""
+        <div style="text-align: center; padding: 2rem 0;">
+            <h2 style="font-size: 2rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+                       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                Ready to Transform Your Newsletter Workflow?
+            </h2>
+        </div>
+        """, unsafe_allow_html=True)
+
+        benefit_col1, benefit_col2, benefit_col3 = st.columns(3)
+        with benefit_col1:
+            st.markdown("""
+            <div style="text-align: center; padding: 1rem;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">✅</div>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Free tier available<br/>No credit card required</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with benefit_col2:
+            st.markdown("""
+            <div style="text-align: center; padding: 1rem;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🤖</div>
+                <p style="color: #94a3b8; font-size: 0.95rem;">10+ AI models<br/>Llama 3.3, Mixtral, Gemma</p>
+            </div>
+            """, unsafe_allow_html=True)
+        with benefit_col3:
+            st.markdown("""
+            <div style="text-align: center; padding: 1rem;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚡</div>
+                <p style="color: #94a3b8; font-size: 0.95rem;">Lightning fast<br/>Powered by Groq</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("")
+
+        # Primary CTAs
+        cta_col1, cta_col2, cta_col3 = st.columns([1, 1, 1], gap="medium")
+        with cta_col1:
+            if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="bottom_cta_demo"):
+                st.session_state.demo_mode = True
+                st.session_state.user_id = str(uuid.uuid4())
+                st.session_state.user_email = 'demo@creatorpulse.com'
+                st.session_state.guided_mode = True
+                st.session_state.current_step = "Source Connections"
+                st.rerun()
+        with cta_col2:
+            if st.button("🔐 Login", use_container_width=True, key="bottom_cta_login"):
+                st.switch_page("pages/1_🔐_Login.py")
+        with cta_col3:
+            if st.button("📝 Sign Up", use_container_width=True, key="bottom_cta_signup"):
+                st.switch_page("pages/2_📝_Signup.py")
+
+        st.markdown("")
+        st.markdown('<p style="text-align: center; color: #64748b; font-size: 0.85rem;">Start curating amazing newsletters in minutes, not hours</p>', unsafe_allow_html=True)
+
 elif page == "Source Connections":
+    # Require authentication for functional pages
+    if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
+        st.warning("🔐 Please login or use demo mode to access this feature")
+        st.info("Choose an option below to continue:")
+
+        auth_col1, auth_col2, auth_col3 = st.columns(3)
+        with auth_col1:
+            if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="source_demo"):
+                st.session_state.demo_mode = True
+                st.session_state.user_id = str(uuid.uuid4())
+                st.session_state.user_email = 'demo@creatorpulse.com'
+                st.rerun()
+        with auth_col2:
+            if st.button("🔐 Login", use_container_width=True, key="source_login"):
+                st.switch_page("pages/1_🔐_Login.py")
+        with auth_col3:
+            if st.button("📝 Sign Up", use_container_width=True, key="source_signup"):
+                st.switch_page("pages/2_📝_Signup.py")
+        st.stop()
+
     st.title("🔗 Source Connections")
     st.markdown("Connect your content sources to start curating your newsletter.")
 
@@ -833,6 +919,26 @@ elif page == "Source Connections":
             st.info("💡 Add at least one source to continue to the next step")
 
 elif page == "Style Trainer":
+    # Require authentication for functional pages
+    if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
+        st.warning("🔐 Please login or use demo mode to access this feature")
+        st.info("Choose an option below to continue:")
+
+        auth_col1, auth_col2, auth_col3 = st.columns(3)
+        with auth_col1:
+            if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="style_demo"):
+                st.session_state.demo_mode = True
+                st.session_state.user_id = str(uuid.uuid4())
+                st.session_state.user_email = 'demo@creatorpulse.com'
+                st.rerun()
+        with auth_col2:
+            if st.button("🔐 Login", use_container_width=True, key="style_login"):
+                st.switch_page("pages/1_🔐_Login.py")
+        with auth_col3:
+            if st.button("📝 Sign Up", use_container_width=True, key="style_signup"):
+                st.switch_page("pages/2_📝_Signup.py")
+        st.stop()
+
     st.title("✍️ Writing Style Trainer")
     st.markdown("Upload your past newsletters to train the AI on your unique writing style.")
 
@@ -920,6 +1026,26 @@ elif page == "Style Trainer":
             st.info("💡 Train your writing style to continue to the next step")
 
 elif page == "Generate Newsletter":
+    # Require authentication for functional pages
+    if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
+        st.warning("🔐 Please login or use demo mode to access this feature")
+        st.info("Choose an option below to continue:")
+
+        auth_col1, auth_col2, auth_col3 = st.columns(3)
+        with auth_col1:
+            if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="generate_demo"):
+                st.session_state.demo_mode = True
+                st.session_state.user_id = str(uuid.uuid4())
+                st.session_state.user_email = 'demo@creatorpulse.com'
+                st.rerun()
+        with auth_col2:
+            if st.button("🔐 Login", use_container_width=True, key="generate_login"):
+                st.switch_page("pages/1_🔐_Login.py")
+        with auth_col3:
+            if st.button("📝 Sign Up", use_container_width=True, key="generate_signup"):
+                st.switch_page("pages/2_📝_Signup.py")
+        st.stop()
+
     st.title("📝 Generate Newsletter")
     st.markdown("Generate an AI-powered newsletter draft based on your sources and style.")
 
@@ -1173,6 +1299,26 @@ elif page == "Generate Newsletter":
                                 st.rerun()
 
 elif page == "Dashboard":
+    # Require authentication for functional pages
+    if not auth.is_authenticated() and not st.session_state.get('demo_mode', False):
+        st.warning("🔐 Please login or use demo mode to access this feature")
+        st.info("Choose an option below to continue:")
+
+        auth_col1, auth_col2, auth_col3 = st.columns(3)
+        with auth_col1:
+            if st.button("🎮 Try Demo Mode", use_container_width=True, type="primary", key="dashboard_demo"):
+                st.session_state.demo_mode = True
+                st.session_state.user_id = str(uuid.uuid4())
+                st.session_state.user_email = 'demo@creatorpulse.com'
+                st.rerun()
+        with auth_col2:
+            if st.button("🔐 Login", use_container_width=True, key="dashboard_login"):
+                st.switch_page("pages/1_🔐_Login.py")
+        with auth_col3:
+            if st.button("📝 Sign Up", use_container_width=True, key="dashboard_signup"):
+                st.switch_page("pages/2_📝_Signup.py")
+        st.stop()
+
     st.title("📊 Dashboard")
     st.markdown("Track your newsletter performance and usage metrics.")
 
